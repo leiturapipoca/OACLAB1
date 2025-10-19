@@ -2,7 +2,7 @@ float calccosseno(float radianos, int termos) {
     const float EPS = 1e-7f;
     float x = normalize_angle(radianos);
 
-    
+    //
     if (x < 0.0f) x = -x;
 
     /* reduzir para [0, PI/2] usando cos(pi - t) = -cos(t) pois a convergencia da serie e melhor perto do 0*/
