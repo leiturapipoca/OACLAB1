@@ -4,9 +4,9 @@
 
 A implementação foi dividida em três partes principais:
 
-1.  [cite_start]**Procedimento `sincos`:** Uma função auxiliar que recebe um ângulo em radianos e retorna seu seno e cosseno[cite: 50, 51].
-2.  [cite_start]**Procedimento `DFT`:** A rotina principal que recebe um vetor de amostras `x[n]`, os ponteiros para os vetores de saída (parte real e imaginária de `X[k]`) e o número de pontos `N`, realizando o cálculo completo da transformada[cite: 53, 54].
-3.  [cite_start]**Programa `main`:** Um programa principal responsável por inicializar os vetores na memória, chamar a função DFT e exibir os resultados formatados no console[cite: 55, 78].
+1.  **Procedimento `sincos`:** Uma função auxiliar que recebe um ângulo em radianos e retorna seu seno e cosseno[cite: 50, 51].
+2.  **Procedimento `DFT`:** A rotina principal que recebe um vetor de amostras `x[n]`, os ponteiros para os vetores de saída (parte real e imaginária de `X[k]`) e o número de pontos `N`, realizando o cálculo completo da transformada[cite: 53, 54].
+3. **Programa `main`:** Um programa principal responsável por inicializar os vetores na memória, chamar a função DFT e exibir os resultados formatados no console[cite: 55, 78].
 
 ### 🛠️ Principais Desafios da Implementação
 
