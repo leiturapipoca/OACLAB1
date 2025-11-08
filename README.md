@@ -16,7 +16,7 @@ Desenvolver um algoritmo matemático complexo como a DFT em Assembly apresentou 
 
 * **📐 Aproximação de Funções Trigonométricas:** A arquitetura RISC-V base não possui instruções nativas para seno e cosseno. Para implementar a função `sincos`, foi necessário recorrer a uma **aproximação por série de Taylor**. Traduzir essa expansão matemática, com suas potências e fatoriais, para operações de Assembly foi um dos maiores desafios, exigindo um controle minucioso de laços e cálculos cumulativos.
 
-* [cite_start]**💹 Manipulação de Ponto Flutuante e Números Complexos:** A DFT opera inteiramente com números de ponto flutuante e resulta em um espectro de frequência complexo. Isso significou:
+* **💹 Manipulação de Ponto Flutuante e Números Complexos:** A DFT opera inteiramente com números de ponto flutuante e resulta em um espectro de frequência complexo. Isso significou:
     * Utilizar o banco de registradores de ponto flutuante (`fa0`, `fa1`, etc.) para todos os cálculos.
     * Representar números complexos como um par de floats (parte real e imaginária).
     * Implementar a **Fórmula de Euler** ($e^{i\theta} = \cos(\theta) + i\sin(\theta)$)  para conectar o resultado do `sincos` com o cálculo principal da DFT, gerenciando a multiplicação e soma de números complexos manualmente.
