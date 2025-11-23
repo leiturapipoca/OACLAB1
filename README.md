@@ -1,26 +1,78 @@
-## 🔬 Implementação da Transformada Discreta de Fourier (DFT) em Assembly RISC-V
+## 🔧 Laboratório 2 — CPU RISC-V Uniciclo (RV32I)
 
-Esta seção do projeto foi dedicada à implementação completa da **Transformada Discreta de Fourier (DFT)**, um algoritmo fundamental no processamento de sinais, utilizando exclusivamente a linguagem Assembly para a arquitetura RISC-V RV32IMF.O objetivo era converter um sinal do domínio do tempo para o domínio da frequência, conforme a fórmula matemática fornecida.
+Este trabalho consistiu na implementação completa de uma **CPU uniciclo compatível com a ISA RISC-V RV32I reduzida**, utilizando **Verilog** e o fluxo de síntese do **Intel Quartus Prime v24.1**.  
+O objetivo foi construir, testar e validar uma arquitetura funcional capaz de executar um subconjunto essencial de instruções, além de analisar seu desempenho físico e temporal no FPGA.
 
-A implementação foi dividida em três partes principais:
+---
 
-1.  **Procedimento `sincos`:** Uma função auxiliar que recebe um ângulo em radianos e retorna seu seno e cosseno.
-2.  **Procedimento `DFT`:** A rotina principal que recebe um vetor de amostras `x[n]`, os ponteiros para os vetores de saída (parte real e imaginária de `X[k]`) e o número de pontos `N`, realizando o cálculo completo da transformada.
-3. **Programa `main`:** Um programa principal responsável por inicializar os vetores na memória, chamar a função DFT e exibir os resultados formatados no console.
+### 🚀 Funcionalidades Implementadas
 
-### 🛠️ Principais Desafios da Implementação
+A CPU uniciclo desenvolvida suporta as seguintes instruções definidas no laboratório:
 
-Desenvolver um algoritmo matemático complexo como a DFT em Assembly apresentou desafios únicos que exigiram um profundo entendimento da arquitetura do processador:
+- **R-Type:** `add`, `sub`, `and`, `or`, `slt`
+- **I-Type:** `lw`, `addi`, `jalr`
+- **S-Type:** `sw`
+- **B-Type:** `beq`
+- **U-Type:** `lui`
+- **J-Type:** `jal`
 
-* **🤯 Programação em Baixo Nível:** Diferente de linguagens de alto nível, o Assembly exige o gerenciamento manual de cada recurso. Foi preciso controlar o fluxo de dados entre registradores, gerenciar o aninhamento dos loops (`k` e `n` da fórmula da DFT) e administrar a pilha de execução para chamadas de procedimento, tudo de forma explícita.
+---
 
-* **📐 Aproximação de Funções Trigonométricas:** A arquitetura RISC-V base não possui instruções nativas para seno e cosseno. Para implementar a função `sincos`, foi necessário recorrer a uma **aproximação por série de Taylor**. Traduzir essa expansão matemática, com suas potências e fatoriais, para operações de Assembly foi um dos maiores desafios, exigindo um controle minucioso de laços e cálculos cumulativos.
+### 🧩 Principais Módulos Implementados
 
-* **💹 Manipulação de Ponto Flutuante e Números Complexos:** A DFT opera inteiramente com números de ponto flutuante e resulta em um espectro de frequência complexo. Isso significou:
-    * Utilizar o banco de registradores de ponto flutuante (`fa0`, `fa1`, etc.) para todos os cálculos.
-    * Representar números complexos como um par de floats (parte real e imaginária).
-    * Implementar a **Fórmula de Euler** ($e^{i\theta} = \cos(\theta) + i\sin(\theta)$)  para conectar o resultado do `sincos` com o cálculo principal da DFT, gerenciando a multiplicação e soma de números complexos manualmente.
+- **Banco de Registradores**  
+  - Três portas de leitura simultâneas: `rs1`, `rs2` e `disp`  
+  - Stack Pointer inicializado em `0x1001_03FC`  
+- **Gerador de Imediatos** conforme tipos R, I, S, B, U e J  
+- **ULA mínima**: `add`, `sub`, `and`, `or`, `slt` e detecção de zero  
+- **Controlador da ULA** e **Bloco de Controle** completos  
+- **Datapath Uniciclo** integrando todos os módulos  
+- **Memória de Instruções e Dados** (1024 words cada), carregadas a partir dos arquivos `.mif` exportados via RARS Custom
 
-* **💾 Gerenciamento de Memória:** O acesso aos vetores `x[n]`, `X_real[k]` e `X_imag[k]` foi feito através de aritmética de ponteiros. Foi necessário calcular manualmente os deslocamentos (offsets) a cada iteração para ler a amostra correta do vetor de entrada e para armazenar os resultados nos locais corretos dos vetores de saída.
+---
 
-* **⏱️ Análise de Desempenho:** Para avaliar a eficiência do código, foi preciso medir o tempo de execução. Isso envolveu a leitura direta dos **Registradores de Controle e Status (CSRs)**, como `time` e `instret`, para obter métricas precisas de tempo e número de instruções executadas[cite: 112, 116, 117, 118].
+### 🧪 Testes e Validação
+
+O programa de teste **de1.s** foi utilizado para validar a implementação.  
+Foram realizadas:
+
+- **Simulação funcional** por forma de onda  
+- **Simulação temporal** após síntese  
+- Verificação da execução correta de todas as instruções  
+- Inspeção do **RTL Viewer** para validar a estrutura do processador
+
+---
+
+### ⏱️ Análise Física e Temporal
+
+- Levantamento completo dos **requisitos físicos** pós-síntese  
+- Avaliação dos **slacks de setup e hold**  
+- Determinação da **frequência máxima de clock** suportada pela arquitetura  
+  - Obtida experimentalmente via simulação temporal ajustando a frequência no arquivo `.vwf`
+
+---
+
+### 🎥 Apresentação em Vídeo
+
+O relatório final inclui também o vídeo exigido pelo laboratório, conforme instruções:
+
+1. Apresentação do grupo, disciplina e semestre  
+2. Descrição dos itens desenvolvidos  
+3. Demonstração dos resultados (simulações, RTL, desempenho)  
+4. Conclusões sobre o projeto  
+
+---
+
+### 📁 Estrutura do Projeto
+
+- Código-fonte em Verilog (`.v`)  
+- Arquivos `.mif` gerados via RARS  
+- Arquivo compactado `.qar` do Quartus  
+- Relatório em PDF conforme solicitado
+
+---
+
+### 📌 Resumo
+
+Este laboratório proporcionou experiência prática completa no desenvolvimento de uma CPU uniciclo, integrando conceitos de ISA RISC-V, datapath, controle, implementação em HDL, simulação funcional/temporal e análise física de hardware sintetizado.
+
