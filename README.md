@@ -1,26 +1,100 @@
-## 🔬 Implementação da Transformada Discreta de Fourier (DFT) em Assembly RISC-V
+O mais importante se encontra nos arquivos .v. O ramD e ramI não precisam de mudanças
 
-Esta seção do projeto foi dedicada à implementação completa da **Transformada Discreta de Fourier (DFT)**, um algoritmo fundamental no processamento de sinais, utilizando exclusivamente a linguagem Assembly para a arquitetura RISC-V RV32IMF.O objetivo era converter um sinal do domínio do tempo para o domínio da frequência, conforme a fórmula matemática fornecida.
+## 🔧 Laboratório 3 — CPU RISC-V Multiciclo (RV32I)
 
-A implementação foi dividida em três partes principais:
+Este projeto consistiu na implementação completa de uma **CPU Multiciclo** compatível com a ISA **RISC-V RV32I reduzida**, utilizando **Verilog** e o ambiente de síntese **Intel Quartus Prime**.  
+O objetivo foi expandir o processador do laboratório anterior, introduzindo um caminho de dados multietapa com controle sequencial via máquina de estados.
 
-1.  **Procedimento `sincos`:** Uma função auxiliar que recebe um ângulo em radianos e retorna seu seno e cosseno.
-2.  **Procedimento `DFT`:** A rotina principal que recebe um vetor de amostras `x[n]`, os ponteiros para os vetores de saída (parte real e imaginária de `X[k]`) e o número de pontos `N`, realizando o cálculo completo da transformada.
-3. **Programa `main`:** Um programa principal responsável por inicializar os vetores na memória, chamar a função DFT e exibir os resultados formatados no console.
+---
 
-### 🛠️ Principais Desafios da Implementação
+### 🚀 Funcionalidades Implementadas
 
-Desenvolver um algoritmo matemático complexo como a DFT em Assembly apresentou desafios únicos que exigiram um profundo entendimento da arquitetura do processador:
+A CPU multiciclo suporta o mesmo conjunto de instruções do laboratório anterior, porém distribuídas em múltiplos ciclos de clock:
 
-* **🤯 Programação em Baixo Nível:** Diferente de linguagens de alto nível, o Assembly exige o gerenciamento manual de cada recurso. Foi preciso controlar o fluxo de dados entre registradores, gerenciar o aninhamento dos loops (`k` e `n` da fórmula da DFT) e administrar a pilha de execução para chamadas de procedimento, tudo de forma explícita.
+- **R-Type:** `add`, `sub`, `and`, `or`, `slt`
+- **I-Type:** `lw`, `addi`, `jalr`
+- **S-Type:** `sw`
+- **B-Type:** `beq`
+- **U-Type:** `lui`
+- **J-Type:** `jal`
 
-* **📐 Aproximação de Funções Trigonométricas:** A arquitetura RISC-V base não possui instruções nativas para seno e cosseno. Para implementar a função `sincos`, foi necessário recorrer a uma **aproximação por série de Taylor**. Traduzir essa expansão matemática, com suas potências e fatoriais, para operações de Assembly foi um dos maiores desafios, exigindo um controle minucioso de laços e cálculos cumulativos.
+O projeto reutiliza os módulos previamente desenvolvidos:  
+**Banco de Registradores**, **Gerador de Imediatos**, **ULA**, **Controlador da ULA**, e o programa de teste **de1.s**.
 
-* **💹 Manipulação de Ponto Flutuante e Números Complexos:** A DFT opera inteiramente com números de ponto flutuante e resulta em um espectro de frequência complexo. Isso significou:
-    * Utilizar o banco de registradores de ponto flutuante (`fa0`, `fa1`, etc.) para todos os cálculos.
-    * Representar números complexos como um par de floats (parte real e imaginária).
-    * Implementar a **Fórmula de Euler** ($e^{i\theta} = \cos(\theta) + i\sin(\theta)$)  para conectar o resultado do `sincos` com o cálculo principal da DFT, gerenciando a multiplicação e soma de números complexos manualmente.
+---
 
-* **💾 Gerenciamento de Memória:** O acesso aos vetores `x[n]`, `X_real[k]` e `X_imag[k]` foi feito através de aritmética de ponteiros. Foi necessário calcular manualmente os deslocamentos (offsets) a cada iteração para ler a amostra correta do vetor de entrada e para armazenar os resultados nos locais corretos dos vetores de saída.
+### 🧩 Pontos-Chave do Projeto
 
-* **⏱️ Análise de Desempenho:** Para avaliar a eficiência do código, foi preciso medir o tempo de execução. Isso envolveu a leitura direta dos **Registradores de Controle e Status (CSRs)**, como `time` e `instret`, para obter métricas precisas de tempo e número de instruções executadas[cite: 112, 116, 117, 118].
+#### ✔ Integração das Memórias na Arquitetura Von Neumann
+- Código e dados compartilham a mesma memória.  
+- Foi implementado um **controle unificado**, onde a seleção entre memória de instruções e de dados é feita **exclusivamente pelo endereço**.  
+- Assim, ambas usam o mesmo bloco físico, com lógica de seleção interna.
+
+#### ✔ Otimização do Acesso à Memória (2 ciclos)
+O IP de memória do Quartus exige **2 ciclos para leitura/escrita**.  
+Para isso, o **diagrama de estados** foi ajustado para incluir:
+- ciclo de requisição de memória  
+- ciclo de espera (stall implícito)  
+- execução da próxima etapa apenas após `mem_ready`
+
+Isso reduz o número de estados extras e torna o acesso mais previsível.
+
+#### ✔ Bloco Controlador e Máquina de Estados
+Foi implementado um **controle sequencial completo**, responsável por coordenar:
+- fetch → decode → execute → memory → write-back  
+- sinais de controle para multiplexadores, registradores intermediários e escrita na memória  
+- caminhos específicos para instruções com fluxos longos (como `lw` e `jal`)
+
+A máquina de estados inclui:
+- estados comuns a todas as instruções  
+- ramos especializados para load/store, branch, jump e operações R-Type
+
+---
+
+### 🧪 Testes e Validação
+
+Com o programa **de1.s**, foram realizados:
+
+- ✔ **Simulação funcional** (forma de onda)  
+- ✔ **Simulação temporal** após síntese  
+- ✔ Verificação da execução correta de todas as instruções  
+- ✔ Análise do **RTL Viewer** para inspeção da arquitetura multiciclo
+
+---
+
+### ⏱️ Análise Física e Temporal
+
+Foram obtidos:
+
+- Requisitos físicos e temporais completos pós-síntese  
+- Verificação dos slacks de **setup** e **hold**  
+- Determinação experimental da **frequência máxima de clock utilizável** pela CPU  
+  - Feito variando a frequência no arquivo `.vwf` e observando falhas de temporização
+
+---
+
+### 🎥 Apresentação em Vídeo
+
+O relatório acompanha a apresentação obrigatória, contendo:
+
+1. Introdução do grupo e da disciplina  
+2. Explicação dos itens avaliados  
+3. Demonstração da CPU multiciclo em simulação  
+4. Conclusões gerais sobre o desempenho e implementação
+
+---
+
+### 📁 Conteúdo do Projeto
+
+- Código-fonte em Verilog (`.v`)  
+- Arquivo `.qar` do Quartus com o projeto completo  
+- Simulações (`.vwf`)  
+- Relatório em PDF  
+- Máquina de estados, diagrama e capturas de RTL Viewer  
+
+---
+
+### 📌 Resumo
+
+O laboratório aprofundou o entendimento do ciclo de instrução, controle sequencial, temporização e abertura crítica.  
+A implementação final resultou em uma **CPU Multiciclo funcional**, validada em simulação funcional e temporal, seguindo fielmente o padrão da ISA RV32I reduzida.
